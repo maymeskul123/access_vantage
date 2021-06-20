@@ -5,19 +5,6 @@ import datetime, time
 symbols = ['ALI.DEX', 'BABA', 'NVE.FRK', 'ABEA.DEX', 'IBM', 'MSFT', 'APLE', 'NVDA', 'AMD',  'AMZN', 'SEB', 'KINS',
            'BMW.FRK', 'TOYOF', 'MKL', 'FB2A.DEX', 'BFOCX']
 
-def ipo_calendar():
-    url = 'https://www.alphavantage.co/query?function=IPO_CALENDAR&apikey=ER49QYN4BVCI9UML'
-    r = requests.get(url)
-    data = r.json()
-    print(data)
-
-def CURRENCY_EXCHANGE_RATE(money1, money2):
-    url = f'https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency={money1}&to_currency={money2}'\
-                +'&apikey=ER49QYN4BVCI9UML'
-    r = requests.get(url)
-    data = r.json()
-    print(data)
-
 def get_ticket(**param):
     url = 'https://www.alphavantage.co/query?'
     parameters = []
@@ -40,8 +27,6 @@ def get_ticket(**param):
         status = err[0]
     else:
         save_to_parquet(data, param.get('function')+'_' + now.strftime("%d_%m_%Y_%H_%M_%S"))
-    #data_log = [process_name, function=param.get('function'), date_time, status]
-    #data_log = [process_name, param.get('function'), date_time, status]
     data_log = [process_name, param, date_time, status]
     return (data_log)
 
