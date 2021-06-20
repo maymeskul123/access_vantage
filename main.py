@@ -1,6 +1,6 @@
 import requests
 import pandas as pd
-import datetime
+import datetime, time
 
 
 # def get_ticket():
@@ -49,6 +49,12 @@ def save_to_parquet(data_dict, symbol):
 
 if __name__ == '__main__':
     for sym in symbols:
-        log_add(get_ticket(sym))
+        data_log = get_ticket(sym)
+        log_add(data_log)
+        if data_log[3] == 'Fail':
+            print('Waiting for 30 sec ...')
+            time.sleep(30)
+
+
 
 
