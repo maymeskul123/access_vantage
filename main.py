@@ -23,13 +23,12 @@ def CURRENCY_EXCHANGE_RATE(money1, money2):
 def get_ticket(**param):
     url = 'https://www.alphavantage.co/query?'
     parameters = []
-    print('ura!!!', param.get('function'))
     for key, val in param.items():
         #print(key, val)
         parameters.append(key)
         url = url + key+'='+val+'&'
     url = url + 'apikey=ER49QYN4BVCI9UML'
-    print(parameters)
+    print(url)
     process_name = 'AlphaVantage'
     status = 'Successful'
     r = requests.get(url)
@@ -42,7 +41,7 @@ def get_ticket(**param):
     if err[0] == 'Error Message' or err[0] == 'Note':
         status = err[0]
     else:
-        save_to_parquet(data, sym)
+        save_to_parquet(data, param.get('function'))
     #data_log = [process_name, function=param.get('function'), date_time, status]
     data_log = [process_name, param.get('function'), date_time, status]
     return (data_log)
@@ -53,9 +52,9 @@ def log_add(data):
     df.to_csv(r'access.log', mode='a', header=False, index=False)
 
 
-def save_to_parquet(data_dict, symbol):
+def save_to_parquet(data_dict, func):
     df = pd.DataFrame.from_dict(data_dict, orient="index")
-    name_file = 'data_' + symbol + '.parguet'
+    name_file = 'data_' + func + '.parguet'
     df.to_parquet(name_file, engine='auto', compression='snappy')
     #d = pd.read_parquet(name_file)
     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
@@ -68,20 +67,20 @@ if __name__ == '__main__':
     # data = r.json()
     # print(data)
 
-    get_ticket(function='CURRENCY_EXCHANGE_RATE', from_currency='USD', to_currency='UAH')
+    #get_ticket(function='CURRENCY_EXCHANGE_RATE', from_currency='USD', to_currency='UAH')
 
-    # for sym in symbols:
-    #     print(f'Getting {sym} ticket...')
-    #     data_log = get_ticket(sym)
-    #     log_add(data_log)
-    #     if data_log[3] == 'Note':
-    #         print('Waiting for 65 sec ...')
-    #         time.sleep(65)
-    #         print(f'Getting {sym} ticket...')
-    #         data_log = get_ticket(sym)
-    #         log_add(data_log)
-    #     elif data_log[3] == 'Error Message':
-    #         print(f'Error Message for {sym}')
+    for sym in symbols:
+        print(f'Getting {sym} ticket...')
+        data_log = get_ticket(function='TIME_SERIES_INTRADAY', symbol=sym, interval='5min')
+        log_add(data_log)
+        if data_log[3] == 'Note':
+            print('Waiting for 65 sec ...')
+            time.sleep(65)
+            print(f'Getting {sym} ticket...')
+            data_log = get_ticket(function='TIME_SERIES_INTRADAY', symbol=sym, interval='5min')
+            log_add(data_log)
+        elif data_log[3] == 'Error Message':
+            print(f'Error Message for {sym}')
 
     #CURRENCY_EXCHANGE_RATE('USD', 'UAH')
 
