@@ -28,6 +28,7 @@ def get_ticket(**param):
     else:
         save_to_parquet(data, param.get('function')+'_' + now.strftime("%d_%m_%Y_%H_%M_%S"))
     data_log = [process_name, param, date_time, status]
+    log_add(data_log)
     return (data_log)
 
 def log_add(data):
@@ -39,7 +40,10 @@ def log_add(data):
 def save_to_parquet(data_dict, name):
     df = pd.DataFrame.from_dict(data_dict, orient="index")
     name_file = name + '.parguet'
-    df.to_parquet(name_file, engine='auto', compression='snappy')
+    try:
+        df.to_parquet(name_file, engine='pyarrow', compression='snappy')
+    except ValueError as e:
+        print(e)
     #d = pd.read_parquet(name_file)
     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
     #     print(d)
@@ -52,16 +56,15 @@ if __name__ == '__main__':
     # print(data)
 
     get_ticket(function='CURRENCY_EXCHANGE_RATE', from_currency='USD', to_currency='UAH')
+    get_ticket(function='TIME_SERIES_DAILY', symbol='IBM')
 
-    for sym in symbols:
-        print(f'Getting {sym} ticket...')
-        data_log = get_ticket(function='TIME_SERIES_INTRADAY', symbol=sym, interval='5min')
-        log_add(data_log)
-        if data_log[3] == 'Note':
-            print('Waiting for 65 sec ...')
-            time.sleep(65)
-            print(f'Getting {sym} ticket...')
-            data_log = get_ticket(function='TIME_SERIES_INTRADAY', symbol=sym, interval='5min')
-            log_add(data_log)
-        elif data_log[3] == 'Error Message':
-            print(f'Error Message for {sym}')
+    # for sym in symbols:
+    #     print(f'Getting {sym} ticket...')
+    #     data_log = get_ticket(function='TIME_SERIES_INTRADAY', symbol=sym, interval='5min')
+    #     if data_log[3] == 'Note':
+    #         print('Waiting for 65 sec ...')
+    #         time.sleep(65)
+    #         print(f'Getting {sym} ticket...')
+    #         data_log = get_ticket(function='TIME_SERIES_INTRADAY', symbol=sym, interval='5min')    #
+    #     elif data_log[3] == 'Error Message':
+    #         print(f'Error Message for {sym}')
