@@ -4,7 +4,8 @@ import datetime, time
 
 
 # def get_ticket():
-symbols = ['IBM', 'MSFT', 'APLE', 'NVDA', 'AMD', 'TSCO.LON', 'GPV.TRV', 'DAI.DEX', 'RELIANCE.BSE']
+symbols = ['ALI.DEX', 'BABA', 'NVE.FRK', 'ABEA.DEX', 'IBM', 'MSFT', 'APLE', 'NVDA', 'AMD',  'AMZN', 'SEB', 'KINS',
+           'BMW.FRK', 'TOYOF', 'MKL', 'FB2A.DEX', 'BFOCX']
 
 def get_ticket(sym):
 
@@ -14,11 +15,7 @@ def get_ticket(sym):
     url = f'https://www.alphavantage.co/query?function={function}&symbol={sym}&interval={interval}&apikey=ER49QYN4BVCI9UML'
     # url = 'https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=amd&apikey=ER49QYN4BVCI9UML'
     status = 'Successful'
-    try:
-        r = requests.get(url)
-    except requests.exceptions.RequestException as e:
-        print(e)
-        status = e
+    r = requests.get(url)
     now = datetime.datetime.now()  # current date and time
     date_time = now.strftime("%d/%m/%Y, %H:%M:%S")
     data = r.json()
@@ -26,7 +23,7 @@ def get_ticket(sym):
     err = list(data.keys())
     print(err[0])
     if err[0] == 'Error Message' or err[0] == 'Note':
-        status = 'Fail'
+        status = err[0]
     else:
         save_to_parquet(data, sym)
     data_log = [process_name, {'function': function, 'interval': interval}, date_time, status]
@@ -48,12 +45,23 @@ def save_to_parquet(data_dict, symbol):
 
 
 if __name__ == '__main__':
+    # url = 'https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=Berkshire&apikey=ER49QYN4BVCI9UML'
+    # r = requests.get(url)
+    # data = r.json()
+    # print(data)
+
     for sym in symbols:
+        print(f'Getting {sym} ticket...')
         data_log = get_ticket(sym)
         log_add(data_log)
-        if data_log[3] == 'Fail':
-            print('Waiting for 30 sec ...')
-            time.sleep(30)
+        if data_log[3] == 'Note':
+            print('Waiting for 65 sec ...')
+            time.sleep(65)
+            print(f'Getting {sym} ticket...')
+            data_log = get_ticket(sym)
+            log_add(data_log)
+        elif data_log[3] == 'Error Message':
+            print(f'Error Message for {sym}')
 
 
 
