@@ -55,7 +55,14 @@ functions = [dict(function='TIME_SERIES_INTRADAY', symbol='IBM', interval='1min'
                 dict(function='CRYPTO_INTRADAY', symbol='ETH', market='USD', interval='15min', outputsize='full'),
                 dict(function='CRYPTO_INTRADAY', symbol='ETH', market='USD', interval='30min', outputsize='full'),
                 dict(function='CRYPTO_INTRADAY', symbol='ETH', market='USD', interval='60min', outputsize='full'),
-                dict(function='DIGITAL_CURRENCY_DAILY', symbol='BTC', market='CNY')
+                dict(function='DIGITAL_CURRENCY_DAILY', symbol='BTC', market='CNY'),
+                dict(function='DIGITAL_CURRENCY_WEEKLY', symbol='BTC', market='CNY'),
+                dict(function='DIGITAL_CURRENCY_MONTHLY', symbol='BTC', market='CNY'),
+                dict(function='SMA', symbol='IBM', interval='weekly', time_period='10', series_type='open'),
+                dict(function='EMA', symbol='IBM', interval='weekly', time_period='10', series_type='open'),
+                dict(function='EMA', symbol='USDEUR', interval='weekly', time_period='10', series_type='open'),
+                dict(function='WMA', symbol='IBM', interval='weekly', time_period='10', series_type='open'),
+                dict(function='DEMA', symbol='IBM', interval='weekly', time_period='10', series_type='open')
              ]
 
 def get_ticket(**param):
@@ -78,12 +85,15 @@ def get_ticket(**param):
     try:
         data = r.json()
     except json.decoder.JSONDecodeError as e:
-        print(e)
+        #print(e)
         error = True
     if not error:
+        #print(data)
         err = list(data.keys())
-        if err[0] == 'Error Message' or err[0] == 'Note':
+        if len(err) != 0 and (err[0] == 'Error Message' or err[0] == 'Note'):
             status = err[0]
+        elif len(err) == 0:
+            status = 'Returned empty JSON'
         else:
             save_to_parquet(data, param.get('function')+'_' + now.strftime("%d_%m_%Y_%H_%M_%S"))
     else:
@@ -111,6 +121,17 @@ def save_to_parquet(data_dict, name):
 
 
 if __name__ == '__main__':
+    for i, func in enumerate(functions):
+        print(f'Getting func{i} {func.get("function")} ticket...')
+        data_log = get_ticket(param=func)
+        if data_log[3] == 'Note':
+            print('Waiting for 65 sec ...')
+            time.sleep(65)
+            print(f'Getting func{i} {func.get("function")} ticket...')
+            data_log = get_ticket(param=func)
+        elif data_log[3] == 'Error Message':
+            print(f'Error Message for func{i} {func.get("function")}')
+
     # url = 'https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=Berkshire&apikey=ER49QYN4BVCI9UML'
     # r = requests.get(url)
     # data = r.json()
@@ -118,10 +139,7 @@ if __name__ == '__main__':
 
     #get_ticket(param=func1) #Example for call function with dict() in the parameters!!!
 
-    # get_ticket(function='CURRENCY_EXCHANGE_RATE', from_currency='USD', to_currency='UAH')
-    #get_ticket(function='TIME_SERIES_DAILY', symbol='IBM')
-    #func1 = {'function':'TIME_SERIES_INTRADAY_EXTENDED', 'symbol':'IBM', 'interval':'15min', 'slice':'year1month1'}
-    #get_ticket(function='TIME_SERIES_INTRADAY_EXTENDED', symbol='IBM', interval='15min', slice='year1month1')
+    #get_ticket(param={'function': 'CRYPTO_RATING', 'symbol': 'BTC'})
 
     # for sym in symbols:
     #     print(f'Getting {sym} ticket...')
@@ -134,13 +152,3 @@ if __name__ == '__main__':
     #     elif data_log[3] == 'Error Message':
     #         print(f'Error Message for {sym}')
 
-    for i, func in enumerate(functions):
-        print(f'Getting func{i} {func.get("function")} ticket...')
-        data_log = get_ticket(param=func)
-        if data_log[3] == 'Note':
-            print('Waiting for 65 sec ...')
-            time.sleep(65)
-            print(f'Getting func{i} {func.get("function")} ticket...')
-            data_log = get_ticket(param=func)
-        elif data_log[3] == 'Error Message':
-            print(f'Error Message for func{i} {func.get("function")}')
