@@ -1,8 +1,8 @@
 import json
-
 import requests
 import pandas as pd
-import datetime, time
+import datetime
+import time
 
 symbols = ['ALI.DEX', 'BABA', 'NVE.FRK', 'ABEA.DEX', 'IBM', 'MSFT', 'APLE', 'NVDA', 'AMD',  'AMZN', 'SEB', 'KINS',
            'BMW.FRK', 'TOYOF', 'MKL', 'FB2A.DEX', 'BFOCX']
